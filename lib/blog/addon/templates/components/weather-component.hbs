@@ -1,0 +1,30 @@
+<div class='card m-4'>
+  <div class='card-body'>
+    <p>
+      blog/weather-component template
+    </p>
+
+    <p>
+      Tracked temperature {{this.temperature}}
+    </p>
+    <button
+      class='btn btn-outline-secondary'
+      role='button'
+      type='button'
+      {{on 'click' (fn this.refresh @event)}}
+    >
+      Refresh temperature (random)
+    </button>
+
+    <div class='card m-4'>
+      <div class='card-body'>
+        <p>
+          blog/weather-child-component template
+        </p>
+        <p>
+          Tracked temperature from parent : {{this.temperature}}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
