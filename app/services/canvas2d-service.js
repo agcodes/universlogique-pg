@@ -4,6 +4,14 @@ import CanvasData32 from '../object/canvas/canvas-data-32';
 export default class Canvas2dService {
 	canvasData = null;
 	imageData = null;
+	offSet = null;
+	limitWidth = 0;
+	limitHeight = 0;
+	centerAbs = true;
+	margin = null;
+	grad = null;
+	ptMin = null;
+	ptMax = null;
 	setContext(idCanvas) {
 		this.canvasElement = document.getElementById(idCanvas);
 		this.context = null;
@@ -17,11 +25,16 @@ export default class Canvas2dService {
 		this.ptMax = [this.width, this.height, 0];
 		this.ptMin = [0, 0, 0];
 		this.margin = [0, 0, 0];
+		this.offSet = [0, 0, 0];
 		this.grad = [1, 1, 1];
 		this.paramsDefined = false;
 		this.signedCoord = false;
 	}
 	setCanvasData(w, h, x, y) {
+		this.width = w;
+		this.height = h;
+		this.limitWidth = w;
+		this.limitHeight = h;
 		this.imagedata = this.context.createImageData(w, h);
 		this.canvasData = new CanvasData32();
 		this.canvasData.initialize(this.imagedata, w, h, [x, y]);
@@ -158,6 +171,33 @@ export default class Canvas2dService {
 		}
 
 		return ptMax;
+	}
+	getPointFromPlan(pt, withLimit, decimals) {
+		if (typeof decimals !== "number") {
+			decimals = 6;
+		}
+
+		if (this.isSet(pt) === false) {
+			return pt;
+		}
+
+		if (withLimit) {
+			pt[0] -= this.limitX0;
+		}
+
+		if (this.grad[0] === 0 && this.grad[1] === 0) {
+			return pt;
+		}
+
+		const xC = (this.centerAbs) ?
+			(pt[0] - (this.limitWidth - this.limitHeight) / 2 - this.margin[0] + this.ptMin[0] * this.grad[0]) / this.grad[0] - this.offSet[1] * this.grad[1] :
+			(pt[0] - this.margin[0] + this.ptMin[0] * this.grad[0]) / this.grad[0] - this.offSet[1] * this.grad[1];
+
+
+		const yC = (pt[1] - this.margin[1] + this.ptMin[1] * this.grad[1]) / this.grad[1] - this.offSet[0] * this.grad[0];
+
+		const d = Math.pow(10, decimals);
+		return [Math.round(xC * d) / d, Math.round(yC * d) / d, 0, (typeof pt[3] !== 'undefined') ? pt[3] : null];
 	}
 	getPointOnPlan(pt) {
 		let xC = 0;

@@ -9,6 +9,8 @@ export default class DrawingComponent extends Component {
 	animationService = null;
 	colorsService = null;
 	fps = 50;
+	width = 600;
+	height = 600;
 	constructor(owner, args) {
 		super(owner, args);
 	}
@@ -22,7 +24,7 @@ export default class DrawingComponent extends Component {
 
 		this.canvasService = new Canvas2dService();
 		this.canvasService.setContext(idCanvas);
-		this.canvasService.setCanvasData(500, 500, 0, 0);
+		this.canvasService.setCanvasData(this.width, this.height, 0, 0);
 	}
 	addMainAnimation(f, fps) {
 		this.withAnimation = true;
