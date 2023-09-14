@@ -54,6 +54,7 @@ module.exports = function (environment) {
 
   if (environment === 'production') {
 		ENV.baseURL= '/universlogique-pg/';
+		ENV.rootURL = '/universlogique-pg/';
     // here you can enable a production-specific feature
   }
 
