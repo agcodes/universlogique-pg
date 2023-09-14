@@ -2095,7 +2095,7 @@ catch(err) {
 
 ;
           if (!runningTests) {
-            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+71ff1c2a"});
+            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+3ed87b04"});
           }
         
 //# sourceMappingURL=universlogique-pg.map
