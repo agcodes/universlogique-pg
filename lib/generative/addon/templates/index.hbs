@@ -1,7 +1,16 @@
 <div class='card m-4'>
   <div class='card-body'>
-    <LinkTo @route="mandelbrot">
-      Mandelbrot
-    </LinkTo>
+    <ul>
+      <li>
+        <LinkTo @route='mandelbrot.page' @model='1'>
+          Mandelbrot
+        </LinkTo>
+      </li>
+      <li>
+        <LinkTo @route='mandelbrot.page' @model='2-ifs'>
+          Mandelbrot / IFS
+        </LinkTo>
+      </li>
+    </ul>
   </div>
 </div>

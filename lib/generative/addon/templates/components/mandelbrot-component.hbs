@@ -1,13 +1,60 @@
 <p>
-  MandelbrotComponent
+  <LinkTo @route='index'>
+    Fractals
+  </LinkTo>
 </p>
 
-<canvas id="mandelbrot-canvas" width='600' height='600'>
-  <div>
-    Canvas not supported or disabled
-  </div>
-</canvas>
+<p>
+  Mandelbrot
+</p>
 
-<div>
-	<a href="https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js">Source</a>
+<div class='row'>
+  <div class='col-md-6'>
+    <canvas id='mandelbrot-canvas' width='600' height='600'>
+      <div>
+        Canvas not supported or disabled
+      </div>
+    </canvas>
+  </div>
+
+  <div class='col-md-4'>
+    <div class='panel'>
+      <a
+        href='https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js'
+      >
+        Code
+      </a>
+    </div>
+    <p>
+      Parameters
+    </p>
+    <ul>
+      <li>
+        x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
+      </li>
+      <li>
+        y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
+      </li>
+      <li>
+        Function : {{this.mandelbrot.functionDefinition}}
+      </li>
+      <li>
+        Iterations : {{this.mandelbrot.params.maxIterations}}
+      </li>
+      <li>
+        Ifs :
+        <ul>
+          <li>
+            Mode : {{this.mandelbrot.params.ifsParams.mode}}
+          </li>
+          <li>
+            Iterations : {{this.mandelbrot.params.ifsParams.iterations}}
+          </li>
+          <li>
+            Function : {{this.mandelbrot.ifsFunctionDefinition}}
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
 </div>

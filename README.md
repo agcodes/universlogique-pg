@@ -1,7 +1,6 @@
 # universlogique-pg
 
-This README outlines the details of collaborating on this Ember application.
-A short introduction of this app could easily go here.
+This repository contains some codes.
 
 ## Prerequisites
 
@@ -12,7 +11,7 @@ You will need the following things properly installed on your computer.
 * [Ember CLI](https://ember-cli.com/)
 * [Google Chrome](https://google.com/chrome/)
 
-## Installation
+## Installation Ember application
 
 * `git clone <repository-url>` this repository
 * `cd universlogique-pg`

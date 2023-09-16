@@ -1,0 +1,28 @@
+{
+	"id": 1,
+	"x1": -2.1,
+	"x2": 0.8,
+	"y1": -1.3,
+	"y2": 1.3,
+	"type": "f1",
+	"maxIterations": 60,
+	"ifsParams": {
+		"type": "multiple",
+		"args": [
+			2,
+			0
+		],
+		"mode": 2,
+		"iterations": 25
+	},
+	"method": 4,
+	"drColor": [
+		300,
+		10,
+		-5,
+		100,
+		50,
+		17,
+		35
+	]
+}

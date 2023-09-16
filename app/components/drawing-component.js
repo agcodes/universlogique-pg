@@ -11,8 +11,12 @@ export default class DrawingComponent extends Component {
 	fps = 50;
 	width = 600;
 	height = 600;
+	inputData=null;
 	constructor(owner, args) {
 		super(owner, args);
+		this.inputData = args.inputData;
+		this.colorsService = new ColorsService();
+		this.canvasService = new Canvas2dService();
 	}
 	initComponent(idCanvas) {
 		this.intervalID = setTimeout(() => {
@@ -20,9 +24,6 @@ export default class DrawingComponent extends Component {
 		}, 200);
 	}
 	initRender(idCanvas) {
-		this.colorsService = new ColorsService();
-
-		this.canvasService = new Canvas2dService();
 		this.canvasService.setContext(idCanvas);
 		this.canvasService.setCanvasData(this.width, this.height, 0, 0);
 	}

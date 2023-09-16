@@ -7,41 +7,8 @@ export default class CComplex {
 	constructor(a, b, c) {
 		this.a = a; // r real
 		this.b = b; // i imaginary
-		this.c = (typeof c === "number") ? c : 0;
+		this.c = (typeof c === "number") ? c : 0; // add "3rd dimension" for fun
 		this.square = 0;
-	}
-	transform(args) {
-		if (args === null || args.length === 0) {
-			return this;
-		}
-
-		this.a += args[0];
-		if (args.length == 1) {
-			return this;
-		}
-
-		this.b += args[1];
-		if (args.length == 2) {
-			return this;
-		}
-
-		this.c += args[2];
-		if (args.length == 3) {
-			return this;
-		}
-
-		if (args.length > 3) {
-			this.a *= args[3];
-		}
-
-		if (args.length > 4) {
-			this.b *= args[4];
-		}
-
-		if (args.length > 5) {
-			this.c *= args[5];
-		}
-		return this;
 	}
 	setSquare() {
 		this.square = this.squaresSum();
@@ -163,6 +130,7 @@ export default class CComplex {
 	}
 	pow(n) {
 		if (typeof this.c === "number" && this.c !== 0) {
+			// handle 3rd dimension if defined
 			if (n > 1 && n % 2 === 0) {
 				return this.pow3d(n);
 			}
@@ -318,6 +286,39 @@ export default class CComplex {
 			default:
 				return this;
 		}
+	}
+	transform(args) {
+		if (args === null || args.length === 0) {
+			return this;
+		}
+
+		this.a += args[0];
+		if (args.length == 1) {
+			return this;
+		}
+
+		this.b += args[1];
+		if (args.length == 2) {
+			return this;
+		}
+
+		this.c += args[2];
+		if (args.length == 3) {
+			return this;
+		}
+
+		if (args.length > 3) {
+			this.a *= args[3];
+		}
+
+		if (args.length > 4) {
+			this.b *= args[4];
+		}
+
+		if (args.length > 5) {
+			this.c *= args[5];
+		}
+		return this;
 	}
 	sqrt() {
 		const d = Math.sqrt(this.squaresSum());
