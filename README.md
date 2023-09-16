@@ -1,6 +1,6 @@
 # universlogique-pg
 
-This repository contains some codes.
+This repository is intended to present fractal generation algorithms. The original code of the application simplified for ease of understanding.
 
 ## Prerequisites
 
