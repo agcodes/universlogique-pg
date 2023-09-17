@@ -74459,23 +74459,8 @@ define("ember-resolver/features", [], function () {
       this.mandelbrot = new _mandelbrot.default();
 
       // set parameters (see public/mandelbrot/data)
-      this.mandelbrot.params.method = this.inputData.method;
-      this.mandelbrot.params.drColor = this.inputData.drColor;
-      this.mandelbrot.params.maxIterations = this.inputData.maxIterations;
-      if (this.inputData.ifsParams) {
-        this.mandelbrot.params.ifsParams = this.inputData.ifsParams;
-        this.inputData.ifsParams.functionDefinition = this.mandelbrot.ifsFunctionDefinition;
-      }
-      this.mandelbrot.params.x1 = this.inputData.x1;
-      this.mandelbrot.params.x2 = this.inputData.x2;
-      this.mandelbrot.params.y1 = this.inputData.y1;
-      this.mandelbrot.params.y2 = this.inputData.y2;
-      this.mandelbrot.params.type = this.inputData.type;
-      this.inputData.functionDefinition = this.mandelbrot.functionDefinition;
-
-      // set colors
+      this.mandelbrot.params.setParameters(this.inputData);
       this.mandelbrot.params.setDrColor(this.mandelbrot.params.drColor, this.colorsService);
-      this.mandelbrot.init();
     }
     initRender(idCanvas) {
       super.initRender(idCanvas);
@@ -74557,7 +74542,7 @@ define("ember-resolver/features", [], function () {
   var _default = Eng;
   _exports.default = _default;
 });
-;define("generative/object/fractal-parameters", ["exports"], function (_exports) {
+;define("generative/object/fractal-parameters", ["exports", "generative/object/mandelbrot-functions", "universlogique-pg/object/math/CComplex"], function (_exports, _mandelbrotFunctions, _CComplex) {
   "use strict";
 
   Object.defineProperty(_exports, "__esModule", {
@@ -74570,6 +74555,12 @@ define("ember-resolver/features", [], function () {
   class FractalParameters {
     constructor() {
       _defineProperty(this, "pageID", "");
+      _defineProperty(this, "target", 4);
+      _defineProperty(this, "base", 2);
+      _defineProperty(this, "type", "f1");
+      _defineProperty(this, "func", "");
+      _defineProperty(this, "maxIterations", 50);
+      _defineProperty(this, "minIterations", 0);
       _defineProperty(this, "r", 2.5);
       _defineProperty(this, "x1", -2.5);
       _defineProperty(this, "y1", -2.5);
@@ -74580,16 +74571,10 @@ define("ember-resolver/features", [], function () {
       _defineProperty(this, "c", null);
       _defineProperty(this, "args", null);
       _defineProperty(this, "min", 0);
-      _defineProperty(this, "maxIterations", 50);
-      _defineProperty(this, "minIterations", 0);
-      _defineProperty(this, "type", "f1");
-      _defineProperty(this, "func", "");
-      _defineProperty(this, "base", 2);
       _defineProperty(this, "method", 1);
       _defineProperty(this, "inner", false);
       _defineProperty(this, "out", true);
       _defineProperty(this, "z0", 0);
-      _defineProperty(this, "step", 0.01);
       _defineProperty(this, "drColor", null);
       _defineProperty(this, "innerColor", null);
       _defineProperty(this, "bgColor", null);
@@ -74597,21 +74582,50 @@ define("ember-resolver/features", [], function () {
       _defineProperty(this, "innerMethod", 0);
       _defineProperty(this, "fixedInnerColor", null);
       _defineProperty(this, "noise", null);
-      _defineProperty(this, "varArgs", null);
-      _defineProperty(this, "varNb", 0);
-      _defineProperty(this, "varNoise", null);
-      _defineProperty(this, "d3", 0);
       _defineProperty(this, "colorsI", null);
-      _defineProperty(this, "target", 4);
       _defineProperty(this, "itInterval", null);
       _defineProperty(this, "dW", false);
       _defineProperty(this, "ifsParams", null);
       _defineProperty(this, "zMethod", 0);
       _defineProperty(this, "colorsService", null);
-      this.ifsParams = {
-        mode: 0,
-        iterations: 0
-      };
+      _defineProperty(this, "c0", null);
+      _defineProperty(this, "mode", 0);
+      this.c0 = null;
+      this.ifsParams = null;
+    }
+    setParameters(data) {
+      this.pageID = data.id;
+      this.method = data.method;
+      this.drColor = data.drColor;
+      this.maxIterations = data.maxIterations;
+      this.x1 = data.x1;
+      this.x2 = data.x2;
+      this.y1 = data.y1;
+      this.y2 = data.y2;
+      this.a = data.a;
+      this.b = data.b;
+      this.mode = data.mode;
+      this.type = data.type;
+      this.args = data.args;
+      const mandelbrotFunctions = new _mandelbrotFunctions.default();
+      this.setC0();
+
+      // function
+      this.currentFunction = mandelbrotFunctions.getFunction(this.type);
+      this.functionDefinition = mandelbrotFunctions.getFunctionDefinition(this.type, this.func, this.base, this.args);
+
+      // IFS (optional)
+      if (data.ifsParams) {
+        this.ifsParams = new FractalParameters();
+        this.ifsParams.setParameters(data.ifsParams);
+      }
+    }
+    setC0() {
+      if (typeof this.a !== "undefined" && this.a !== null) {
+        this.c0 = new _CComplex.default(this.a, this.b, this.c);
+      } else {
+        this.c0 = null;
+      }
     }
     setDrColor(c, colorsService) {
       this.colorsService = colorsService;
@@ -74620,7 +74634,8 @@ define("ember-resolver/features", [], function () {
         this.drColor = [0, 0, 0];
       }
       this.colorsI = [];
-      this.fixedDrColor = colorsService.hslToRgb(this.drColor);
+
+      // prepare colors
       for (let i = 0; i <= this.maxIterations + 10; i++) {
         const v = this.getIColorValue(i);
         this.colorsI.push(colorsService.hslToRgb([this.drColor[0] + v * this.drColor[4], this.drColor[1] + v * this.drColor[5], this.drColor[2] + v * this.drColor[6], this.drColor.length >= 8 ? this.drColor[3] + v * this.drColor[7] : null]));
@@ -74629,17 +74644,8 @@ define("ember-resolver/features", [], function () {
     }
     setInnerColor(c2, colorsService) {
       this.innerColor = c2;
-      if (typeof this.innerColor[4] !== "number") {
-        this.innerColor[4] = 0;
-      }
-      if (typeof this.innerColor[5] !== "number") {
-        this.innerColor[5] = 0;
-      }
-      if (typeof this.innerColor[6] !== "number") {
-        this.innerColor[6] = 0;
-      }
       if (this.innerMethod == 0) {
-        if ([1, 10, 2, 3, 4, 18].includes(this.method)) {
+        if ([1, 2, 3, 4, 5].includes(this.method)) {
           const v = this.getIColorValue(this.maxIterations);
           this.fixedInnerColor = this.getInnerColor(v, v, v, v, v, true);
         } else {
@@ -74649,7 +74655,7 @@ define("ember-resolver/features", [], function () {
     }
     getDrColor(i) {
       if (this.colorsI.length === 0) {
-        return i === 0 ? this.fixedDrColor : this.colorsService.hslToRgb([this.drColor[0] + i * this.drColor[4], this.drColor[1] + i * this.drColor[5], this.drColor[2] + i * this.drColor[6]]);
+        return this.colorsService.hslToRgb([this.drColor[0] + i * this.drColor[4], this.drColor[1] + i * this.drColor[5], this.drColor[2] + i * this.drColor[6]]);
       } else {
         return this.colorsI[i];
       }
@@ -74664,10 +74670,8 @@ define("ember-resolver/features", [], function () {
           return 1 / i * 100;
         case 4:
           return i === 0 ? 0 : Math.sin(Math.log(i)) + 1;
-        case 18:
+        case 5:
           return i % 2 === 0 ? 0 : 10;
-        case 29:
-          return Math.sin(Math.log(i)) + 1;
         default:
           return -1;
       }
@@ -74690,7 +74694,11 @@ define("ember-resolver/features", [], function () {
       this.ifsFunction = null;
     }
     getPt(x0, y0, z0) {
-      const i = this.params.ifsParams.mode > 0 ? this.getIFSn(x0, y0, z0) : this.getI(x0, y0, z0);
+      const i = this.params.ifsParams.mode > 0 ?
+      // ifs algo
+      this.getIFSn(x0, y0, z0) :
+      // classic algo by default
+      this.getI(x0, y0, z0);
       return this.getMandelbrotPt(x0, y0, z0, i);
     }
     getI(x0, y0, z0) {
@@ -74724,7 +74732,7 @@ define("ember-resolver/features", [], function () {
     }
     getIFSi(z, c, n) {
       this.it++;
-      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.iterations) {
+      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.maxIterations) {
         // end
         // in : mark 0
         return 0;
@@ -74738,7 +74746,7 @@ define("ember-resolver/features", [], function () {
       // recursive call
       return this.getIFSi(this.getZ(z, c, n + 1), c, n + 1) + this.getIFSi(this.getIfsZ(z, c, n + 1), c, n + 1);
     }
-    getIfsZ(z, c, i) {
+    getIfsZ(z) {
       return z.mul(new _CComplex.default(2, 0));
     }
     getZ(z, c) {
@@ -74762,11 +74770,26 @@ define("ember-resolver/features", [], function () {
   });
   _exports.default = void 0;
   class MandelbrotFunctions {
-    getZnDef(n) {
-      if (n == 1) {
-        return "z";
-      }
-      return "z^" + n;
+    getFunction(name) {
+      const functions = {
+        "multiple": (z, m, j, f, args) => {
+          // f(z^n+j)
+          return z.mul(new _CComplex.default(args[0], args[1])).getC(f);
+        },
+        "f1": (z, m, j, f) => {
+          // classic mandelbrot
+          return z.pow(m).add(j).getC(f);
+        },
+        "f2": (z, m, j, f) => {
+          // f(z^n-j)
+          return z.pow(m).sub(j).getC(f);
+        },
+        "f3": (z, m, j, f) => {
+          // f(|z|^n+c)
+          return z.abs().pow(m).add(j).getC(f);
+        }
+      };
+      return functions[name];
     }
     getFunctionDefinition(name, f, n, args) {
       const functions = {
@@ -74802,35 +74825,16 @@ define("ember-resolver/features", [], function () {
       const regex = new RegExp(escapedStringToReplace, 'g');
       return originalString.replace(regex, newString);
     }
-    getFunction(name) {
-      const functions = {
-        "multiple": (z, m, j, f, args) => {
-          // f(z^n+j)
-          return z.mul(new _CComplex.default(args[0], args[1])).getC(f);
-        },
-        "f1": (z, m, j, f) => {
-          // classic mandelbrot
-          return z.pow(m).add(j).getC(f);
-        },
-        "f2": (z, m, j, f) => {
-          // f(z^n-j)
-          return z.pow(m).sub(j).getC(f);
-        },
-        "f3": (z, m, j, f, args) => {
-          // burning ship
-          if (args !== null) {
-            return z.abs().pow(m).add(j).getC(f).transform(args);
-          }
-          // f(|z|^n+c)
-          return z.abs().pow(m).add(j).getC(f);
-        }
-      };
-      return functions[name];
+    getZnDef(n) {
+      if (n == 1) {
+        return "z";
+      }
+      return "z^" + n;
     }
   }
   _exports.default = MandelbrotFunctions;
 });
-;define("generative/object/mandelbrot", ["exports", "generative/object/fractal-parameters", "generative/object/mandelbrot-functions", "universlogique-pg/object/math/CComplex"], function (_exports, _fractalParameters, _mandelbrotFunctions, _CComplex) {
+;define("generative/object/mandelbrot", ["exports", "generative/object/fractal-parameters", "universlogique-pg/object/math/CComplex"], function (_exports, _fractalParameters, _CComplex) {
   "use strict";
 
   Object.defineProperty(_exports, "__esModule", {
@@ -74840,27 +74844,16 @@ define("ember-resolver/features", [], function () {
   class Mandelbrot {
     constructor() {
       this.params = new _fractalParameters.default();
-      this.c0 = null;
-      this.currentFunction = null;
-      this.ifsFunction = null;
-      this.ifsFunctionDefinition = "";
-      this.functionDefinition = "";
     }
-    init() {
-      const mandelbrotFunctions = new _mandelbrotFunctions.default();
-      this.currentFunction = mandelbrotFunctions.getFunction(this.params.type);
-      this.functionDefinition = mandelbrotFunctions.getFunctionDefinition(this.params.type, this.params.func, this.params.base, this.params.args);
-      this.ifsFunction = mandelbrotFunctions.getFunction(this.params.ifsParams.type);
-      this.ifsFunctionDefinition = mandelbrotFunctions.getFunctionDefinition(this.params.ifsParams.type, this.params.ifsParams.func, this.params.ifsParams.base, this.params.ifsParams.args);
-    }
+    init() {}
     getPt(x0, y0, z0) {
-      const i = this.params.ifsParams.mode > 0 ? this.getIFSn(x0, y0, z0) : this.getI(x0, y0, z0);
+      const i = this.params.ifsParams ? this.getIFSn(x0, y0, z0) : this.getI(x0, y0, z0);
       return this.getMandelbrotPt(x0, y0, z0, i);
     }
     getI(x0, y0, z0) {
       // classic mandelbrot : set j from start point
       // else julia set
-      const c = this.c0 === null ? new _CComplex.default(x0, y0, z0) : this.c0;
+      const c = this.params.c0 === null ? new _CComplex.default(x0, y0, z0) : this.params.c0;
 
       // new z
       let z = new _CComplex.default(x0, y0, z0);
@@ -74881,14 +74874,14 @@ define("ember-resolver/features", [], function () {
 
       // start to 0 or current point
       let z = this.params.ifs === 1 ? new _CComplex.default(0, 0, 0) : new _CComplex.default(x0, y0, z0);
-      const c = this.c0 === null ? new _CComplex.default(x0, y0, z0) : this.c0;
+      const c = this.params.ifsParams.c0 === null ? new _CComplex.default(x0, y0, z0) : this.params.ifsParams.c0;
 
       // return result
       return this.getIFSi(z, c, 0);
     }
     getIFSi(z, c, n) {
       this.it++;
-      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.iterations) {
+      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.maxIterations) {
         // end
         // in : mark 1 or 0
         return 0;
@@ -74902,17 +74895,18 @@ define("ember-resolver/features", [], function () {
       // recursive call
       return this.getIFSi(this.getZ(z, c, n + 1), c, n + 1) + this.getIFSi(this.getIfsZ(z, c, n + 1), c, n + 1);
     }
-    getIfsZ(z, c, i) {
-      //too simple
-      //return z.mulReal(this.params.ifsMultiple);
-      return this.ifsFunction(z, this.params.ifsParams.base, this.params.ifsParams.c ? new _CComplex.default(this.params.ifsParams.c[0], this.params.ifsParams.c[1]) : c, this.params.ifsParams.f, this.params.ifsParams.args);
+    getIfsZ(z, c) {
+      // execute defined function (ex : z.mul(c(2,0));
+      return this.params.ifsParams.currentFunction(z, this.params.ifsParams.base, c, this.params.ifsParams.f, this.params.ifsParams.args);
     }
     getZ(z, c) {
-      return this.currentFunction(z, this.params.base, c, this.params.func, this.params.args);
+      // execute defined function (ex for classic mandelbrot f1 : z.pow(2).add(c))
+      return this.params.currentFunction(z, this.params.base, c, this.params.f, this.params.args);
     }
     getMandelbrotPt(x, y, z, i) {
       // out
       if (this.params.out === true && i < this.params.maxIterations && i >= this.params.minIterations) {
+        // return pt with color
         return [x, y, z, this.params.getDrColor(i), i];
       }
       return null;
@@ -75002,7 +74996,7 @@ define("ember-resolver/features", [], function () {
   </p>
   
   <div class='row'>
-    <div class='col-md-6'>
+    <div class='col-md-7'>
       <canvas id='mandelbrot-canvas' width='600' height='600'>
         <div>
           Canvas not supported or disabled
@@ -75018,43 +75012,48 @@ define("ember-resolver/features", [], function () {
           Code
         </a>
       </div>
-      <p>
-        Parameters
-      </p>
-      <ul>
-        <li>
-          x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
-        </li>
-        <li>
-          y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
-        </li>
-        <li>
-          Function : {{this.mandelbrot.functionDefinition}}
-        </li>
-        <li>
-          Iterations : {{this.mandelbrot.params.maxIterations}}
-        </li>
-        <li>
-          Ifs :
-          <ul>
-            <li>
-              Mode : {{this.mandelbrot.params.ifsParams.mode}}
-            </li>
-            <li>
-              Iterations : {{this.mandelbrot.params.ifsParams.iterations}}
-            </li>
-            <li>
-              Function : {{this.mandelbrot.ifsFunctionDefinition}}
-            </li>
-          </ul>
-        </li>
-      </ul>
+      <div class='panel'>
+        <p>
+          Parameters :
+        </p>
+        <ul>
+          <li>
+            x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
+          </li>
+          <li>
+            y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
+          </li>
+          <li>
+            Function : {{this.mandelbrot.params.functionDefinition}}
+          </li>
+          <li>
+            C: [{{this.mandelbrot.params.a}}, {{this.mandelbrot.params.b}}]
+          </li>
+          <li>
+            Iterations : {{this.mandelbrot.params.maxIterations}}
+          </li>
+          <li>
+            Ifs :
+            <ul>
+              <li>
+                Mode : {{this.mandelbrot.params.ifsParams.mode}}
+              </li>
+              <li>
+                Iterations : {{this.mandelbrot.params.ifsParams.maxIterations}}
+              </li>
+              <li>
+                Function : {{this.mandelbrot.params.ifsParams.functionDefinition}}
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
   */
   {
-    "id": "h9ls6Av0",
-    "block": "[[[10,2],[12],[1,\"\\n  \"],[8,[39,0],null,[[\"@route\"],[\"index\"]],[[\"default\"],[[[[1,\"\\n    Fractals\\n  \"]],[]]]]],[1,\"\\n\"],[13],[1,\"\\n\\n\"],[10,2],[12],[1,\"\\n  Mandelbrot\\n\"],[13],[1,\"\\n\\n\"],[10,0],[14,0,\"row\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"col-md-6\"],[12],[1,\"\\n    \"],[10,\"canvas\"],[14,1,\"mandelbrot-canvas\"],[14,\"width\",\"600\"],[14,\"height\",\"600\"],[12],[1,\"\\n      \"],[10,0],[12],[1,\"\\n        Canvas not supported or disabled\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\\n  \"],[10,0],[14,0,\"col-md-4\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,3],[14,6,\"https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js\"],[12],[1,\"\\n        Code\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n    \"],[10,2],[12],[1,\"\\n      Parameters\\n    \"],[13],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        x : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"x1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"x2\"]]],[1,\"]\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        y : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"y1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"y2\"]]],[1,\"]\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        Function : \"],[1,[30,0,[\"mandelbrot\",\"functionDefinition\"]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"maxIterations\"]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        Ifs :\\n        \"],[10,\"ul\"],[12],[1,\"\\n          \"],[10,\"li\"],[12],[1,\"\\n            Mode : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"mode\"]]],[1,\"\\n          \"],[13],[1,\"\\n          \"],[10,\"li\"],[12],[1,\"\\n            Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"iterations\"]]],[1,\"\\n          \"],[13],[1,\"\\n          \"],[10,\"li\"],[12],[1,\"\\n            Function : \"],[1,[30,0,[\"mandelbrot\",\"ifsFunctionDefinition\"]]],[1,\"\\n          \"],[13],[1,\"\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
+    "id": "aYCX5Pr+",
+    "block": "[[[10,2],[12],[1,\"\\n  \"],[8,[39,0],null,[[\"@route\"],[\"index\"]],[[\"default\"],[[[[1,\"\\n    Fractals\\n  \"]],[]]]]],[1,\"\\n\"],[13],[1,\"\\n\\n\"],[10,2],[12],[1,\"\\n  Mandelbrot\\n\"],[13],[1,\"\\n\\n\"],[10,0],[14,0,\"row\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"col-md-7\"],[12],[1,\"\\n    \"],[10,\"canvas\"],[14,1,\"mandelbrot-canvas\"],[14,\"width\",\"600\"],[14,\"height\",\"600\"],[12],[1,\"\\n      \"],[10,0],[12],[1,\"\\n        Canvas not supported or disabled\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\\n  \"],[10,0],[14,0,\"col-md-4\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,3],[14,6,\"https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js\"],[12],[1,\"\\n        Code\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,2],[12],[1,\"\\n        Parameters :\\n      \"],[13],[1,\"\\n      \"],[10,\"ul\"],[12],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          x : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"x1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"x2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          y : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"y1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"y2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Function : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"functionDefinition\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          C: [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"a\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"b\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"maxIterations\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Ifs :\\n          \"],[10,\"ul\"],[12],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Mode : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"mode\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"maxIterations\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Function : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"functionDefinition\"]]],[1,\"\\n            \"],[13],[1,\"\\n          \"],[13],[1,\"\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
     "moduleName": "generative/templates/components/mandelbrot-component.hbs",
     "isStrictMode": false
   });
@@ -75100,13 +75099,18 @@ define("ember-resolver/features", [], function () {
     <div class='card-body'>
       <ul>
         <li>
-          <LinkTo @route='mandelbrot.page' @model='1'>
+          <LinkTo @route='mandelbrot.page' @model='1-mandelbrot'>
             Mandelbrot
           </LinkTo>
         </li>
         <li>
-          <LinkTo @route='mandelbrot.page' @model='2-ifs'>
+          <LinkTo @route='mandelbrot.page' @model='2-mandelbrot-ifs'>
             Mandelbrot / IFS
+          </LinkTo>
+        </li>
+        <li>
+          <LinkTo @route='mandelbrot.page' @model='10-julia-set'>
+            Julia set
           </LinkTo>
         </li>
       </ul>
@@ -75114,8 +75118,8 @@ define("ember-resolver/features", [], function () {
   </div>
   */
   {
-    "id": "sbW96q8R",
-    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"1\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"2-ifs\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot / IFS\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
+    "id": "ma/IRWgF",
+    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"1-mandelbrot\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"2-mandelbrot-ifs\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot / IFS\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"10-julia-set\"]],[[\"default\"],[[[[1,\"\\n          Julia set\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
     "moduleName": "generative/templates/index.hbs",
     "isStrictMode": false
   });

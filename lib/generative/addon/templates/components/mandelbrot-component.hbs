@@ -9,7 +9,7 @@
 </p>
 
 <div class='row'>
-  <div class='col-md-6'>
+  <div class='col-md-7'>
     <canvas id='mandelbrot-canvas' width='600' height='600'>
       <div>
         Canvas not supported or disabled
@@ -25,36 +25,41 @@
         Code
       </a>
     </div>
-    <p>
-      Parameters
-    </p>
-    <ul>
-      <li>
-        x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
-      </li>
-      <li>
-        y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
-      </li>
-      <li>
-        Function : {{this.mandelbrot.functionDefinition}}
-      </li>
-      <li>
-        Iterations : {{this.mandelbrot.params.maxIterations}}
-      </li>
-      <li>
-        Ifs :
-        <ul>
-          <li>
-            Mode : {{this.mandelbrot.params.ifsParams.mode}}
-          </li>
-          <li>
-            Iterations : {{this.mandelbrot.params.ifsParams.iterations}}
-          </li>
-          <li>
-            Function : {{this.mandelbrot.ifsFunctionDefinition}}
-          </li>
-        </ul>
-      </li>
-    </ul>
+    <div class='panel'>
+      <p>
+        Parameters :
+      </p>
+      <ul>
+        <li>
+          x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
+        </li>
+        <li>
+          y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
+        </li>
+        <li>
+          Function : {{this.mandelbrot.params.functionDefinition}}
+        </li>
+        <li>
+          C: [{{this.mandelbrot.params.a}}, {{this.mandelbrot.params.b}}]
+        </li>
+        <li>
+          Iterations : {{this.mandelbrot.params.maxIterations}}
+        </li>
+        <li>
+          Ifs :
+          <ul>
+            <li>
+              Mode : {{this.mandelbrot.params.ifsParams.mode}}
+            </li>
+            <li>
+              Iterations : {{this.mandelbrot.params.ifsParams.maxIterations}}
+            </li>
+            <li>
+              Function : {{this.mandelbrot.params.ifsParams.functionDefinition}}
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </div>

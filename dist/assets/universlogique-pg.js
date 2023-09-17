@@ -257,15 +257,15 @@
   });
   QUnit.test('addon/object/mandelbrot-base.js', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'addon/object/mandelbrot-base.js should pass ESLint\n\n70:16 - \'i\' is defined but never used. (no-unused-vars)');
+    assert.ok(true, 'addon/object/mandelbrot-base.js should pass ESLint\n\n');
   });
   QUnit.test('addon/object/mandelbrot-functions.js', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'addon/object/mandelbrot-functions.js should pass ESLint\n\n45:61 - Unnecessary escape character: \\/. (no-useless-escape)');
+    assert.ok(false, 'addon/object/mandelbrot-functions.js should pass ESLint\n\n61:61 - Unnecessary escape character: \\/. (no-useless-escape)');
   });
   QUnit.test('addon/object/mandelbrot.js', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'addon/object/mandelbrot.js should pass ESLint\n\n80:16 - \'i\' is defined but never used. (no-unused-vars)');
+    assert.ok(true, 'addon/object/mandelbrot.js should pass ESLint\n\n');
   });
   QUnit.test('addon/resolver.js', function (assert) {
     assert.expect(1);
@@ -795,35 +795,8 @@
     constructor(a, b, c) {
       this.a = a; // r real
       this.b = b; // i imaginary
-      this.c = typeof c === "number" ? c : 0;
+      this.c = typeof c === "number" ? c : 0; // add "3rd dimension" for fun
       this.square = 0;
-    }
-    transform(args) {
-      if (args === null || args.length === 0) {
-        return this;
-      }
-      this.a += args[0];
-      if (args.length == 1) {
-        return this;
-      }
-      this.b += args[1];
-      if (args.length == 2) {
-        return this;
-      }
-      this.c += args[2];
-      if (args.length == 3) {
-        return this;
-      }
-      if (args.length > 3) {
-        this.a *= args[3];
-      }
-      if (args.length > 4) {
-        this.b *= args[4];
-      }
-      if (args.length > 5) {
-        this.c *= args[5];
-      }
-      return this;
     }
     setSquare() {
       this.square = this.squaresSum();
@@ -894,6 +867,7 @@
     }
     pow(n) {
       if (typeof this.c === "number" && this.c !== 0) {
+        // handle 3rd dimension if defined
         if (n > 1 && n % 2 === 0) {
           return this.pow3d(n);
         }
@@ -1028,6 +1002,33 @@
         default:
           return this;
       }
+    }
+    transform(args) {
+      if (args === null || args.length === 0) {
+        return this;
+      }
+      this.a += args[0];
+      if (args.length == 1) {
+        return this;
+      }
+      this.b += args[1];
+      if (args.length == 2) {
+        return this;
+      }
+      this.c += args[2];
+      if (args.length == 3) {
+        return this;
+      }
+      if (args.length > 3) {
+        this.a *= args[3];
+      }
+      if (args.length > 4) {
+        this.b *= args[4];
+      }
+      if (args.length > 5) {
+        this.c *= args[5];
+      }
+      return this;
     }
     sqrt() {
       const d = Math.sqrt(this.squaresSum());
@@ -2109,6 +2110,11 @@
             Fractals
           </LinkTo>
         </li>
+        <li>
+          <a href='https://agcodes.github.io/universlogique-pg/'>
+            Git repos
+          </a>
+        </li>
       </ul>
   
       {{outlet}}
@@ -2116,8 +2122,8 @@
   </div>
   */
   {
-    "id": "/0s5Jl+E",
-    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,2],[12],[1,\"\\n      Index\\n    \"],[13],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\"],[\"generative\"]],[[\"default\"],[[[[1,\"\\n          Fractals\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n\\n    \"],[46,[28,[37,2],null,null],null,null,null],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\",\"component\",\"-outlet\"]]",
+    "id": "rVTHy/NL",
+    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,2],[12],[1,\"\\n      Index\\n    \"],[13],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\"],[\"generative\"]],[[\"default\"],[[[[1,\"\\n          Fractals\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[10,3],[14,6,\"https://agcodes.github.io/universlogique-pg/\"],[12],[1,\"\\n          Git repos\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n\\n    \"],[46,[28,[37,2],null,null],null,null,null],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\",\"component\",\"-outlet\"]]",
     "moduleName": "universlogique-pg/templates/index.hbs",
     "isStrictMode": false
   });
@@ -2160,7 +2166,7 @@ catch(err) {
 
 ;
           if (!runningTests) {
-            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+124447aa"});
+            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+24de99b9"});
           }
         
 //# sourceMappingURL=universlogique-pg.map
