@@ -5,7 +5,8 @@
 	"y1": -1.4,
 	"y2": 1.4,
 	"type": "f1",
-	"maxIterations": 60,
+	"base": 2,
+	"iterations": 60,
 	"ifsParams": {
 		"type": "multiple",
 		"args": [
@@ -13,7 +14,7 @@
 			0
 		],
 		"mode": 2,
-		"maxIterations": 25
+		"iterations": 25
 	},
 	"method": 4,
 	"drColor": [

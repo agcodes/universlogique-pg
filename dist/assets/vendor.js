@@ -74446,28 +74446,28 @@ define("ember-resolver/features", [], function () {
       super(owner, args);
       _defineProperty(this, "y", 0);
       _defineProperty(this, "step", 3);
-      _defineProperty(this, "mandelbrot", null);
-      this.initMandelbrot();
-      this.initComponent("mandelbrot-canvas");
+      _defineProperty(this, "fractal", null);
+      this.initFractal();
+      this.initComponent("component-canvas");
     }
     initComponent(idCanvas) {
       if (super.initComponent(idCanvas) === false) {
         return false;
       }
     }
-    initMandelbrot() {
-      this.mandelbrot = new _mandelbrot.default();
+    initFractal() {
+      this.fractal = new _mandelbrot.default();
 
       // set parameters (see public/mandelbrot/data)
-      this.mandelbrot.params.setParameters(this.inputData);
-      this.mandelbrot.params.setDrColor(this.mandelbrot.params.drColor, this.colorsService);
+      this.fractal.params.setParameters(this.inputData);
+      this.fractal.params.setDrColor(this.fractal.params.drColor, this.colorsService);
     }
     initRender(idCanvas) {
       super.initRender(idCanvas);
       this.y = 0;
 
       // def grid with limits
-      this.canvasService.defGrid([[this.mandelbrot.params.x2, this.mandelbrot.params.y2], [this.mandelbrot.params.x1, this.mandelbrot.params.y1]], this.width, this.height);
+      this.canvasService.defGrid([[this.fractal.params.x2, this.fractal.params.y2], [this.fractal.params.x1, this.fractal.params.y1]], this.width, this.height);
       this.canvasService.addBackgroundInImageData([0, 0, 0]);
       this.canvasService.putImageData(0, 0, this.width, this.height);
       this.addMainAnimation(() => this.draw(), 50);
@@ -74495,16 +74495,91 @@ define("ember-resolver/features", [], function () {
         const pt = this.canvasService.getPointFromPlan([x, y]);
 
         // z not defined here
-        const mandelbrotPt = this.mandelbrot.getPt(pt[0], pt[1], 0);
-        if (mandelbrotPt !== null) {
+        const fractalPt = this.fractal.getPt(pt[0], pt[1], 0);
+        if (fractalPt !== null) {
           // save point
-          pts.push(this.canvasService.getPointOnPlan(mandelbrotPt));
+          pts.push([x, y, 0, fractalPt[3]]);
         }
       }
       return pts;
     }
   }
   _exports.default = MandelbrotComponent;
+});
+;define("generative/components/newton-fractal-component", ["exports", "universlogique-pg/components/drawing-component", "generative/object/newton-fractal"], function (_exports, _drawingComponent, _newtonFractal) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+  function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return typeof key === "symbol" ? key : String(key); }
+  function _toPrimitive(input, hint) { if (typeof input !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (typeof res !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+  class NewtonFractalComponent extends _drawingComponent.default {
+    constructor(owner, args) {
+      super(owner, args);
+      _defineProperty(this, "y", 0);
+      _defineProperty(this, "step", 0.5);
+      _defineProperty(this, "fractal", null);
+      this.initFractal();
+      this.initComponent("component-canvas");
+    }
+    initComponent(idCanvas) {
+      if (super.initComponent(idCanvas) === false) {
+        return false;
+      }
+    }
+    initFractal() {
+      this.fractal = new _newtonFractal.default();
+
+      // set parameters (see public/newton-fractal/data)
+      this.fractal.params.setParameters(this.inputData);
+      this.fractal.params.setDrColor(this.fractal.params.drColor, this.colorsService);
+    }
+    initRender(idCanvas) {
+      super.initRender(idCanvas);
+      this.y = 0;
+
+      // def grid with limits
+      this.canvasService.defGrid([[this.fractal.params.x2, this.fractal.params.y2], [this.fractal.params.x1, this.fractal.params.y1]], this.width, this.height);
+      this.canvasService.addBackgroundInImageData([0, 0, 0]);
+      this.canvasService.putImageData(0, 0, this.width, this.height);
+      this.addMainAnimation(() => this.draw(), 50);
+      this.startComponentAnimation();
+    }
+    draw() {
+      // y scan
+      this.y += this.step;
+      const pts = this.getPts(this.y);
+      if (pts.length > 0) {
+        // update canvas with points
+        this.canvasService.updateImageData(pts, null, 1);
+      }
+      if (this.y > this.height) {
+        // reach bottom, stop animation
+        return false;
+      }
+    }
+    getPts(y) {
+      let pts = [];
+
+      // x scan
+      for (let x = 0; x <= this.width; x += this.step) {
+        // convert canvas point in plan 
+        const pt = this.canvasService.getPointFromPlan([x, y]);
+
+        // z not defined here
+        const fractalPt = this.fractal.getPt(pt[0], pt[1], 0);
+        if (fractalPt !== null) {
+          // save point
+          pts.push([x, y, 0, fractalPt[3], fractalPt[4]]);
+        }
+      }
+      return pts;
+    }
+  }
+  _exports.default = NewtonFractalComponent;
 });
 ;define("generative/config/environment", ["exports"], function (_exports) {
   "use strict";
@@ -74542,7 +74617,7 @@ define("ember-resolver/features", [], function () {
   var _default = Eng;
   _exports.default = _default;
 });
-;define("generative/object/fractal-parameters", ["exports", "generative/object/mandelbrot-functions", "universlogique-pg/object/math/CComplex"], function (_exports, _mandelbrotFunctions, _CComplex) {
+;define("generative/object/fractal-parameters", ["exports", "universlogique-pg/object/math/CComplex"], function (_exports, _CComplex) {
   "use strict";
 
   Object.defineProperty(_exports, "__esModule", {
@@ -74558,8 +74633,8 @@ define("ember-resolver/features", [], function () {
       _defineProperty(this, "target", 4);
       _defineProperty(this, "base", 2);
       _defineProperty(this, "type", "f1");
-      _defineProperty(this, "func", "");
-      _defineProperty(this, "maxIterations", 50);
+      _defineProperty(this, "f", "");
+      _defineProperty(this, "iterations", 50);
       _defineProperty(this, "minIterations", 0);
       _defineProperty(this, "r", 2.5);
       _defineProperty(this, "x1", -2.5);
@@ -74570,11 +74645,11 @@ define("ember-resolver/features", [], function () {
       _defineProperty(this, "b", null);
       _defineProperty(this, "c", null);
       _defineProperty(this, "args", null);
-      _defineProperty(this, "min", 0);
       _defineProperty(this, "method", 1);
       _defineProperty(this, "inner", false);
       _defineProperty(this, "out", true);
       _defineProperty(this, "z0", 0);
+      _defineProperty(this, "zFromOrigin", false);
       _defineProperty(this, "drColor", null);
       _defineProperty(this, "innerColor", null);
       _defineProperty(this, "bgColor", null);
@@ -74597,7 +74672,7 @@ define("ember-resolver/features", [], function () {
       this.pageID = data.id;
       this.method = data.method;
       this.drColor = data.drColor;
-      this.maxIterations = data.maxIterations;
+      this.iterations = data.iterations;
       this.x1 = data.x1;
       this.x2 = data.x2;
       this.y1 = data.y1;
@@ -74607,18 +74682,23 @@ define("ember-resolver/features", [], function () {
       this.mode = data.mode;
       this.type = data.type;
       this.args = data.args;
-      const mandelbrotFunctions = new _mandelbrotFunctions.default();
+      this.base = data.base;
       this.setC0();
 
       // function
-      this.currentFunction = mandelbrotFunctions.getFunction(this.type);
-      this.functionDefinition = mandelbrotFunctions.getFunctionDefinition(this.type, this.func, this.base, this.args);
+      this.setFunctions();
 
       // IFS (optional)
       if (data.ifsParams) {
-        this.ifsParams = new FractalParameters();
+        this.ifsParams = this.getNew();
         this.ifsParams.setParameters(data.ifsParams);
       }
+    }
+    setFunctions() {
+      // defined in child
+    }
+    getNew() {
+      return new FractalParameters();
     }
     setC0() {
       if (typeof this.a !== "undefined" && this.a !== null) {
@@ -74636,7 +74716,7 @@ define("ember-resolver/features", [], function () {
       this.colorsI = [];
 
       // prepare colors
-      for (let i = 0; i <= this.maxIterations + 10; i++) {
+      for (let i = 0; i <= this.iterations + 10; i++) {
         const v = this.getIColorValue(i);
         this.colorsI.push(colorsService.hslToRgb([this.drColor[0] + v * this.drColor[4], this.drColor[1] + v * this.drColor[5], this.drColor[2] + v * this.drColor[6], this.drColor.length >= 8 ? this.drColor[3] + v * this.drColor[7] : null]));
       }
@@ -74646,7 +74726,7 @@ define("ember-resolver/features", [], function () {
       this.innerColor = c2;
       if (this.innerMethod == 0) {
         if ([1, 2, 3, 4, 5].includes(this.method)) {
-          const v = this.getIColorValue(this.maxIterations);
+          const v = this.getIColorValue(this.iterations);
           this.fixedInnerColor = this.getInnerColor(v, v, v, v, v, true);
         } else {
           this.fixedInnerColor = colorsService.hslToRgb(this.innerColor);
@@ -74678,6 +74758,66 @@ define("ember-resolver/features", [], function () {
     }
   }
   _exports.default = FractalParameters;
+});
+;define("generative/object/fractal", ["exports"], function (_exports) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  class Fractal {
+    constructor() {
+      this.magnitude = 0;
+      this.argument = 0;
+      this.squaresSum = 0;
+      this.lastPoint = null;
+      this.colorsService = null;
+    }
+    saveZResults(z) {
+      this.magnitude = 0;
+      if (z) {
+        this.magnitude = this.params.innerMethod === 11 || this.params.method === 11 || this.params.method === 13 || this.params.method === 25 || this.params.method === 33 ? z.getMagnitude() : 0;
+        this.squaresSum = z.squaresSum();
+        this.argument = this.params.method === 12 || this.params.method === 17 || this.params.method === 21 ? z.getArgument() : 0;
+        this.lastPoint = {
+          a: z.a,
+          b: z.b
+        };
+      }
+    }
+    getV(method, i, x, y) {
+      switch (method) {
+        case 11:
+          return this.magnitude;
+        case 12:
+          return this.argument;
+        case 13:
+          return this.magnitude;
+        case 14:
+          return this.squaresSum;
+        case 17:
+          return this.argument * this.squaresSum;
+        case 19:
+          return Math.floor(Math.random() * i);
+        case 20:
+          return Math.abs(Math.sin(this.squaresSum * Math.PI));
+        case 21:
+          return Math.log(this.argument);
+        case 22:
+          return Math.log(this.squaresSum);
+        case 25:
+          return this.lastPoint.b / 2 / Math.PI - 0.09;
+        case 26:
+          return this.colorsService.lerpForPoint(x, y + i / 10, 0.1);
+        case 27:
+          return this.colorsService.lerpForPoint(x + this.squaresSum * 2, y + this.squaresSum * 2, 0.1);
+        default:
+          return i;
+      }
+    }
+  }
+  _exports.default = Fractal;
 });
 ;define("generative/object/mandelbrot-base", ["exports", "generative/object/fractal-parameters", "universlogique-pg/object/math/CComplex"], function (_exports, _fractalParameters, _CComplex) {
   "use strict";
@@ -74717,7 +74857,7 @@ define("ember-resolver/features", [], function () {
         }
         squaresSum = z.squaresSum();
         i++;
-      } while (squaresSum < this.params.target && i < this.params.maxIterations);
+      } while (squaresSum < this.params.target && i < this.params.iterations);
       return i;
     }
     getIFSn(x0, y0, z0) {
@@ -74732,7 +74872,7 @@ define("ember-resolver/features", [], function () {
     }
     getIFSi(z, c, n) {
       this.it++;
-      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.maxIterations) {
+      if (this.it > this.params.iterations || n >= this.params.ifsParams.iterations) {
         // end
         // in : mark 0
         return 0;
@@ -74754,7 +74894,7 @@ define("ember-resolver/features", [], function () {
     }
     getMandelbrotPt(x, y, z, i) {
       // out
-      if (this.params.out === true && i < this.params.maxIterations && i >= this.params.minIterations) {
+      if (this.params.out === true && i < this.params.iterations && i >= this.params.minIterations) {
         return [x, y, z, this.params.getDrColor(i), i];
       }
       return null;
@@ -74772,21 +74912,21 @@ define("ember-resolver/features", [], function () {
   class MandelbrotFunctions {
     getFunction(name) {
       const functions = {
-        "multiple": (z, m, j, f, args) => {
+        "multiple": (z, n, j, f, args) => {
           // f(z^n+j)
           return z.mul(new _CComplex.default(args[0], args[1])).getC(f);
         },
-        "f1": (z, m, j, f) => {
+        "f1": (z, n, j, f) => {
           // classic mandelbrot
-          return z.pow(m).add(j).getC(f);
+          return z.pow(n).add(j).getC(f);
         },
-        "f2": (z, m, j, f) => {
+        "f2": (z, n, j, f) => {
           // f(z^n-j)
-          return z.pow(m).sub(j).getC(f);
+          return z.pow(n).sub(j).getC(f);
         },
-        "f3": (z, m, j, f) => {
+        "f3": (z, n, j, f) => {
           // f(|z|^n+c)
-          return z.abs().pow(m).add(j).getC(f);
+          return z.abs().pow(n).add(j).getC(f);
         }
       };
       return functions[name];
@@ -74834,16 +74974,36 @@ define("ember-resolver/features", [], function () {
   }
   _exports.default = MandelbrotFunctions;
 });
-;define("generative/object/mandelbrot", ["exports", "generative/object/fractal-parameters", "universlogique-pg/object/math/CComplex"], function (_exports, _fractalParameters, _CComplex) {
+;define("generative/object/mandelbrot-parameters", ["exports", "generative/object/fractal-parameters", "generative/object/mandelbrot-functions"], function (_exports, _fractalParameters, _mandelbrotFunctions) {
   "use strict";
 
   Object.defineProperty(_exports, "__esModule", {
     value: true
   });
   _exports.default = void 0;
-  class Mandelbrot {
+  class MandelbrotParameters extends _fractalParameters.default {
+    setFunctions() {
+      const mandelbrotFunctions = new _mandelbrotFunctions.default();
+      this.currentFunction = mandelbrotFunctions.getFunction(this.type);
+      this.functionDefinition = mandelbrotFunctions.getFunctionDefinition(this.type, this.f, this.base, this.args, this.c0);
+    }
+    getNew() {
+      return new MandelbrotParameters();
+    }
+  }
+  _exports.default = MandelbrotParameters;
+});
+;define("generative/object/mandelbrot", ["exports", "generative/object/mandelbrot-parameters", "universlogique-pg/object/math/CComplex", "generative/object/fractal"], function (_exports, _mandelbrotParameters, _CComplex, _fractal) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  class Mandelbrot extends _fractal.default {
     constructor() {
-      this.params = new _fractalParameters.default();
+      super();
+      this.params = new _mandelbrotParameters.default();
     }
     init() {}
     getPt(x0, y0, z0) {
@@ -74866,7 +75026,7 @@ define("ember-resolver/features", [], function () {
         }
         squaresSum = z.squaresSum();
         i++;
-      } while (squaresSum < this.params.target && i < this.params.maxIterations);
+      } while (squaresSum < this.params.target && i < this.params.iterations);
       return i;
     }
     getIFSn(x0, y0, z0) {
@@ -74881,7 +75041,7 @@ define("ember-resolver/features", [], function () {
     }
     getIFSi(z, c, n) {
       this.it++;
-      if (this.it > this.params.maxIterations || n >= this.params.ifsParams.maxIterations) {
+      if (this.it > this.params.iterations || n >= this.params.ifsParams.iterations) {
         // end
         // in : mark 1 or 0
         return 0;
@@ -74905,7 +75065,7 @@ define("ember-resolver/features", [], function () {
     }
     getMandelbrotPt(x, y, z, i) {
       // out
-      if (this.params.out === true && i < this.params.maxIterations && i >= this.params.minIterations) {
+      if (this.params.out === true && i < this.params.iterations && i >= this.params.minIterations) {
         // return pt with color
         return [x, y, z, this.params.getDrColor(i), i];
       }
@@ -74913,6 +75073,405 @@ define("ember-resolver/features", [], function () {
     }
   }
   _exports.default = Mandelbrot;
+});
+;define("generative/object/newton-fractal-functions", ["exports", "universlogique-pg/object/math/CComplex"], function (_exports, _CComplex) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  /* eslint-disable no-unused-vars */
+
+  class NewtonFractalFunctions {
+    getFunction(name) {
+      const functions = {
+        // f(z^n)-c
+        'f1': (z, n, f, c) => z.getC(f).pow(n).sub(c),
+        // z+f(z^n)+c
+        'f2': (z, n, f, c) => z.add(z.getC(f).pow(n)).add(c),
+        // z^(n-2)+f(z)^n+c
+        'f3': (z, n, f, c) => z.pow(n - 2).add(z.getC(f).pow(n)).add(c),
+        // f(z)^n+c
+        'f4': (z, n, f, c) => z.getC(f).pow(n).add(c),
+        // f(z)^n.c+z
+        'f5': (z, n, f, c) => z.getC(f).pow(n).mul(c).add(z),
+        // f(z)^n+c.z
+        'f6': (z, n, f, c) => z.getC(f).mul(z.pow(n).add(c)),
+        // f(z^n+c)
+        'f7': (z, n, f, c) => z.pow(n).add(c).getC(f),
+        // f(z^n)-c^n
+        'f8': (z, n, f, c) => z.pow(n).getC(f).sub(c.pow(n)),
+        // f(z^n+(c+z^n-1))
+        'f9': (z, n, f, c) => z.pow(n).add(c.add(z.pow(n - 1)).getC(f)),
+        // f(z)^n-z+c
+        'f10': (z, n, f, c) => z.getC(f).pow(n).sub(z).add(c),
+        // f(z.(c+z^n+z)+c2-z)
+        'f11': (z, n, f, c, c2) => z.mul(c.add(z.pow(n)).add(z)).add(c2).sub(z).getC(f),
+        // f(z^n)+c/z
+        'f12': (z, n, f, c) => z.pow(n).getC(f).add(c.div(z)),
+        // f(z^n)+z^n-1+z-c
+        'f13': (z, n, f, c) => z.pow(n).getC(f).add(z.pow(n - 1)).add(z).sub(c),
+        // f(z^n)+c2.z^n-1+z+c
+        'f14': (z, n, f, c, c2) => z.pow(n).getC(f).add(c2.mul(z.pow(n - 1))).add(z).add(c),
+        // f(z^n)+c+c2
+        'f15': (z, n, f, c, c2) => z.pow(n).getC(f).add(c).add(c2),
+        // (f(z^n)+c).z
+        'f16': (z, n, f, c) => z.pow(n).getC(f).add(c).mul(z),
+        // f(z^(n-3))+(z^n/(z+c2))+c
+        'f17': (z, n, f, c, c2) => z.pow(n - 3).getC(f).add(z.pow(n).div(z.add(c2))).add(c),
+        'f18': (z, n, f, c) => z.pow(n).getC(f).add(z.add(c).div(z.add(new _CComplex.default(1, 0)))),
+        // (f(z^n)+c)/z
+        'f19': (z, n, f, c) => z.pow(n).getC(f).add(c).div(z),
+        // (f(z^n)-c).c2
+        'f20': (z, n, f, c, c2) => z.pow(n).getC(f).sub(c).mul(c2),
+        'f21': (z, n, f, c) => z.pow(n).getC(f).div(z.add(c).pow(n - 1)).add(c),
+        'f22': (z, n, f, c) => z.pow(n).getC(f).mul(z.pow(n - 1).add(c)).div(z.pow(n - 2).add(c)).add(c),
+        // f(z^(n-3))+z^n+c
+        'f23': (z, n, f, c) => z.pow(n - 3).getC(f).add(z.pow(n)).add(c),
+        // f(z^n)+z^(n-1)+2.c
+        'f24': (z, n, f, c) => z.pow(n).getC(f).add(z.pow(n - 1)).add(c.mulReal(2)),
+        'f25': (z, n, f, c) => z.pow(n).getC(f).add(c.add(z.pow(n - 1))).add(c.add(z.pow(n - 1))),
+        'f26': (z, n, f, c) => z.pow(n).add(c).mul(z.add(c).squareAtan()).getC(f),
+        // f(z^(n*2)+c-z^n)
+        'f27': (z, n, f, c) => z.pow(n * 2).add(c).sub(z.pow(n)).getC(f),
+        // f(z^(-n)+c-z^2)
+        'f28': (z, n, f, c) => z.pow(n).add(c).sub(z.pow(2)).getC(f),
+        // f(|c+(z^n)|)
+        'f29': (z, n, f, c) => c.add(z.pow(n)).abs().getC(f),
+        // |f(z^n)|/z-c
+        'f30': (z, n, f, c) => z.pow(n).getC(f).abs().div(z).sub(c),
+        // f(z)-z^n-c
+        'f31': (z, n, f, c) => z.getC(f).sub(z.pow(n)).sub(c),
+        // z-(z^n)-|c|
+        'f32': (z, n, f, c) => z.getC(f).sub(z.pow(n)).sub(c.abs()),
+        // f(z-((z.c)^n)-c)
+        'f33': (z, n, f, c) => z.sub(z.mul(c).pow(n)).sub(c).getC(f),
+        // z-(z^n+|c|)
+        'f34': (z, n, f, c) => z.getC(f).sub(z.pow(n / 2).add(c)),
+        'f35': (z, n, f, c, c2, args) => z.sub(z.mul(new _CComplex.default(args[0], args[1]))),
+        // f(z^n)+z^n-1+z-c
+        'f36': (z, n, f, c) => z.pow(n).getC(f).add(z.pow(n - 1)).add(z).sub(c).sub(c),
+        'f37': (z, n, f, c) => z.abs().getC(f).pow(n).add(c),
+        'f38': (z, n, f, c) => z.getC(f).abs().pow(n).sub(z).add(c)
+      };
+      return functions[name];
+    }
+    //return z.pow(3).add(z.pow(3)).add(c).div(z.pow(2).mulReal(3).add(c).addReal(-1));
+    getFunctionDefinition(name, f, n, args, c) {
+      const functions = {
+        "f1": () => {
+          return 'f(z)^n-c';
+        },
+        'f2': n => {
+          return 'z+(f(z)^n)+c';
+        },
+        'f3': n => {
+          return "z^" + (n - 2) + "+f(z)^n+c";
+        },
+        'f4': n => {
+          return "f(z)^n+c";
+        },
+        'f5': n => {
+          return "f(z)^n.c+z";
+        },
+        'f6': n => {
+          return "f(z)^n+c.z";
+        },
+        'f7': n => {
+          return "f(z^n+c)";
+        },
+        'f8': n => {
+          return "f(z^n+(c+z^" + (n - 1) + "))";
+        },
+        'f9': n => {
+          return "f(z^n)-c^n";
+        },
+        'f10': n => {
+          return "f(z)^n-z+c";
+        },
+        'f11': n => {
+          return "";
+        },
+        'f12': n => {
+          return "f(z^n)+c/z";
+        },
+        'f13': n => {
+          return "f(z^n)+z^" + (n - 1) + "+z-c";
+        },
+        'f14': n => {
+          return "";
+        },
+        'f15': n => {
+          return "f(z^n)+c+(2,0)";
+        },
+        'f16': n => {
+          return "(f(z^n)+c).z";
+        },
+        'f17': n => {
+          return "";
+        },
+        'f18': n => {
+          return "";
+        },
+        'f19': n => {
+          return "(f(z^n)+c)/z";
+        },
+        'f20': n => {
+          return "";
+        },
+        'f21': n => {
+          return "";
+        },
+        'f22': n => {
+          return "";
+        },
+        'f23': n => {
+          return "f(z^" + (n - 3) + ")+z^n+c";
+        },
+        'f24': n => {
+          return "f(z^n)+z^" + (n - 1) + "+2.c";
+        },
+        'f25': n => {
+          return "";
+        },
+        'f26': n => {
+          return "";
+        },
+        'f27': n => {
+          return "f(z^" + n * 2 + "+c-z^n)";
+        },
+        'f28': n => {
+          return "f(z^n+c-z^2)";
+        },
+        'f29': n => {
+          return "f(|c+(z^n)|)";
+        },
+        'f30': n => {
+          return "|f(z^n)|/z-c";
+        },
+        'f31': n => {
+          return "f(z)-z^n-c";
+        },
+        'f32': n => {
+          return "z-z^n-|c|";
+        },
+        'f33': n => {
+          return "f(z-((z.c)^n)-c)";
+        }
+      };
+      if (functions[name]) {
+        const cValue = c !== null ? " with c = (" + c.a + "," + c.b + ")" : "";
+        const definition = functions[name](n, args, c);
+        if (typeof definition == 'string') {
+          let returnValue = "";
+          if (f === "") {
+            returnValue = this.replaceAllOccurrences(definition.replace(/f\((.*?)\)/g, "$1"), "^n", '^' + n + "");
+          } else {
+            returnValue = this.replaceAllOccurrences(this.replaceAllOccurrences(definition, "f(", f + "(").trim(), "^n", '^' + n + "");
+          }
+          if (returnValue.substring(0, 1) == "(" && returnValue.substring(returnValue.length - 1) == ")") {
+            return returnValue.substring(1).substring(0, returnValue.length - 2);
+          }
+
+          //returnValue = returnValue.replace(/z\^(-?\d+)/g, "z<sup>$1</sup>");
+          //returnValue = returnValue.replace(/c\^(-?\d+)/g, "c<sup>$1</sup>");
+          //returnValue = returnValue.replace(/\(z\)\^(-?\d+)/g, "z<sup>$1</sup>");
+          return returnValue + cValue;
+        }
+      }
+      return "";
+    }
+    replaceAllOccurrences(originalString, stringToReplace, newString) {
+      const escapedStringToReplace = stringToReplace.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+      const regex = new RegExp(escapedStringToReplace, 'g');
+      return originalString.replace(regex, newString);
+    }
+    getDerivativeFunction(type) {
+      const functions = {
+        // zn-c => n.zn-1
+        'f1': (z, n) => new _CComplex.default(n, 0).mul(z.pow(n - 1)),
+        'f2': (z, n) => new _CComplex.default(1, 0).add(new _CComplex.default(n, 0).mul(z.pow(n - 1))),
+        'f4': (z, n) => new _CComplex.default(n, 0).mul(z.pow(n - 1)),
+        'f6_': (z, n) => new _CComplex.default(1, 0).mul(new _CComplex.default(n, 0)).mul(z.pow(n - 1)),
+        'f7': (z, n) => new _CComplex.default(n, 0).mul(z.pow(n - 1)),
+        'f8': (z, n) => new _CComplex.default(n, 0).mul(z.pow(n - 1)),
+        'f10': (z, n) => new _CComplex.default(n, 0).mul(z.pow(n - 1)).sub(new _CComplex.default(1, 0)),
+        'f31': (z, n) => new _CComplex.default(1, 0).sub(z.pow(n - 1).mul({
+          a: n,
+          b: 0
+        }))
+      };
+      if (typeof functions[type] === "undefined") {
+        return null;
+      }
+      return functions[type];
+    }
+  }
+  _exports.default = NewtonFractalFunctions;
+});
+;define("generative/object/newton-fractal-parameters", ["exports", "generative/object/fractal-parameters", "generative/object/newton-fractal-functions"], function (_exports, _fractalParameters, _newtonFractalFunctions) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  class NewtonFractalParameters extends _fractalParameters.default {
+    setFunctions() {
+      const newtonFractalFunctions = new _newtonFractalFunctions.default();
+      this.currentFunction = newtonFractalFunctions.getFunction(this.type);
+      if (this.f === '') {
+        this.iDerivativeFunction = newtonFractalFunctions.getDerivativeFunction(this.type);
+      }
+      this.functionDefinition = newtonFractalFunctions.getFunctionDefinition(this.type, this.f, this.base, this.args, this.c0);
+      console.log(this.functionDefinition);
+    }
+    getDerivativeFunction() {
+      const newtonFractalFunctions = new _newtonFractalFunctions.default();
+      this.currentFunction = newtonFractalFunctions.getDerivativeFunction(this.type);
+    }
+    getNew() {
+      return new NewtonFractalParameters();
+    }
+  }
+  _exports.default = NewtonFractalParameters;
+});
+;define("generative/object/newton-fractal", ["exports", "universlogique-pg/object/math/CComplex", "generative/object/newton-fractal-parameters", "generative/object/fractal"], function (_exports, _CComplex, _newtonFractalParameters, _fractal) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  class NewtonFractal extends _fractal.default {
+    constructor() {
+      super();
+      this.params = new _newtonFractalParameters.default();
+      this.c2 = null;
+      this.iterations = 0;
+      this.eps = 0;
+      this.cDerivative = null;
+      this.iFunction = null;
+      this.iDerivativeFunction = null;
+    }
+    setParameters(mandelbrotParams) {
+      this.params = mandelbrotParams;
+    }
+    initialize(colorsService_) {
+      this.colorsService = colorsService_;
+
+      // step size for numerical derivative
+      const dh = 0.00001;
+      this.cDerivative = new _CComplex.default(dh, dh);
+
+      // max error allowed
+      this.eps = 0.01;
+      this.c2 = new _CComplex.default(2, 0);
+    }
+    getPt(x, y) {
+      const i = this.params.ifsParams && this.params.ifsParams.mode > 0 ? this.getIFSn(x, y, null) : this.getI(x, y);
+      if (i === null) {
+        return null;
+      }
+      const v = this.getV(this.params.method, i, x, y);
+      let vIn0 = v;
+      let vIn1 = v;
+      let vIn2 = v;
+      let vIn3 = v;
+      if (this.params.out === true && i < this.params.iterations && i >= this.params.minIterations) {
+        return [x, y, 0, this.params.getDrColor(i)];
+      }
+      if (this.params.inner === true && i === this.params.iterations) {
+        if (this.params.innerMethod > 0) {
+          vIn0 = this.getV(this.params.innerMethod, i, x, y);
+          vIn1 = vIn0;
+          vIn2 = vIn0;
+          vIn3 = vIn0;
+        }
+        return [x, y, 0, this.params.getInnerColor(v, vIn0, vIn1, vIn2, vIn3, false), i, v];
+      }
+      return null;
+    }
+    getI(x0, y0, z0) {
+      // Newton iteration
+      let z = this.params.zFromOrigin ? new _CComplex.default(0, 0) : new _CComplex.default(x0, y0, z0);
+      const c = this.params.c0 === null ? new _CComplex.default(x0, y0, z0) : this.params.c0;
+      let limit = 0;
+      let i = 0;
+      do {
+        const z0 = this.getNewZ(z, c);
+        if (z0 === null) {
+          break;
+        }
+        limit = Math.abs(z0.sub(z).a);
+        z = z0;
+        i++;
+      } while (limit > this.eps && i < this.params.iterations);
+      this.saveZResults(z);
+      return i;
+    }
+    getNewZ(z, c) {
+      if (this.params.iDerivativeFunction === null) {
+        const fz = this.fZ(z, c, this.params.base);
+        // derivative approximation
+        // z - f(z)/(f(z+0.01)-f(z)/0.01)
+        return z.sub(fz.div(this.fZ(z.add(this.cDerivative), c, this.params.base).sub(fz).div(this.cDerivative)));
+      }
+
+      // real derivative
+      // z - f(z)/f'(z)
+      return z.sub(this.fZ(z, c, this.params.base).div(this.derivativefZ(z, c, this.params.base)));
+    }
+    fZ(z, c, m) {
+      if (this.params.currentFunction) return this.params.currentFunction(z, m, this.params.f, c, this.c2, this.params.args);
+      return z;
+    }
+    derivativefZ(z, c, m) {
+      if (this.params.iDerivativeFunction) return this.params.iDerivativeFunction(z, m, c);
+      return z;
+    }
+    getIFSn(x0, y0, z0) {
+      this.it = 0;
+      // start to 0 or current point
+      const z = this.params.zFromOrigin ? new _CComplex.default(0, 0, 0) : new _CComplex.default(x0, y0, z0);
+      const c = this.params.c0 === null ? new _CComplex.default(x0, y0, z0) : this.params.c0;
+
+      // return result
+      return this.getIFSi(z, this.getNewZ(z, c, false), c, 0);
+    }
+    getIFSi(z, z1, c, n) {
+      this.it++;
+      if (this.it >= this.params.iterations || n >= this.params.ifsParams.iterations) {
+        // iterations limit
+        this.saveZResults(z);
+        // in : mark 1 or 0
+        return 0;
+      }
+      if (Math.abs(z1.sub(z).a) < this.eps) {
+        // end by reaching target
+        this.saveZResults(z);
+        // out : mark 0 or 1
+        return 1;
+      }
+
+      // recursive call
+      return this.getIFSi(z1, this.getNewZ(z, c), c, n + 1) + this.getIFSi(z1, this.getIfsZ(z, c), c, n + 1);
+    }
+    getIfsZ(z, c) {
+      const fz = this.fZ_ifs(z, c);
+      if (this.params.ifsParams.mode == 3) {
+        // z - f(z)/(f(z+0.01)-f(z)/0.01)
+        return z.sub(fz.div(this.fZ_ifs(z.add(this.cDerivative), c, this.params.base).sub(fz).div(this.cDerivative)));
+      } else if (this.params.ifsParams.currentFunction) {
+        return fz;
+      }
+    }
+    fZ_ifs(z, c) {
+      return this.params.ifsParams.currentFunction(z, this.params.ifsParams.base, this.params.ifsParams.f, this.params.ifsParams.c0 !== null ? this.params.ifsParams.c0 : c, this.c2, this.params.ifsParams.args);
+    }
+  }
+  _exports.default = NewtonFractal;
 });
 ;define("generative/resolver", ["exports", "ember-resolver"], function (_exports, _emberResolver) {
   "use strict";
@@ -74933,6 +75492,12 @@ define("ember-resolver/features", [], function () {
   _exports.default = void 0;
   var _default = (0, _routes.default)(function () {
     // Define your engine's route map here
+
+    this.route('newton-fractal', function () {
+      this.route('page', {
+        path: '/:id'
+      });
+    });
     this.route('mandelbrot');
     this.route('mandelbrot', function () {
       this.route('page', {
@@ -74953,6 +75518,21 @@ define("ember-resolver/features", [], function () {
     async model(params) {
       // return data
       return this.getData('mandelbrot', params, 'mandelbrot.page');
+    }
+  });
+  _exports.default = _default;
+});
+;define("generative/routes/newton-fractal/page", ["exports", "universlogique-pg/routes/page"], function (_exports, _page) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  var _default = _page.default.extend({
+    async model(params) {
+      // return data
+      return this.getData('newton-fractal', params, 'newton-fractal.page');
     }
   });
   _exports.default = _default;
@@ -74997,7 +75577,7 @@ define("ember-resolver/features", [], function () {
   
   <div class='row'>
     <div class='col-md-7'>
-      <canvas id='mandelbrot-canvas' width='600' height='600'>
+      <canvas id='component-canvas' width='400' height='400'>
         <div>
           Canvas not supported or disabled
         </div>
@@ -75018,31 +75598,31 @@ define("ember-resolver/features", [], function () {
         </p>
         <ul>
           <li>
-            x : [{{this.mandelbrot.params.x1}}, {{this.mandelbrot.params.x2}}]
+            x : [{{this.fractal.params.x1}}, {{this.fractal.params.x2}}]
           </li>
           <li>
-            y : [{{this.mandelbrot.params.y1}}, {{this.mandelbrot.params.y2}}]
+            y : [{{this.fractal.params.y1}}, {{this.fractal.params.y2}}]
           </li>
           <li>
-            Function : {{this.mandelbrot.params.functionDefinition}}
+            Function : {{this.fractal.params.functionDefinition}}
           </li>
           <li>
-            C: [{{this.mandelbrot.params.a}}, {{this.mandelbrot.params.b}}]
+            C : [{{this.fractal.params.a}}, {{this.fractal.params.b}}]
           </li>
           <li>
-            Iterations : {{this.mandelbrot.params.maxIterations}}
+            Iterations : {{this.fractal.params.iterations}}
           </li>
           <li>
             Ifs :
             <ul>
               <li>
-                Mode : {{this.mandelbrot.params.ifsParams.mode}}
+                Mode : {{this.fractal.params.ifsParams.mode}}
               </li>
               <li>
-                Iterations : {{this.mandelbrot.params.ifsParams.maxIterations}}
+                Iterations : {{this.fractal.params.ifsParams.iterations}}
               </li>
               <li>
-                Function : {{this.mandelbrot.params.ifsParams.functionDefinition}}
+                Function : {{this.fractal.params.ifsParams.functionDefinition}}
               </li>
             </ul>
           </li>
@@ -75052,9 +75632,78 @@ define("ember-resolver/features", [], function () {
   </div>
   */
   {
-    "id": "aYCX5Pr+",
-    "block": "[[[10,2],[12],[1,\"\\n  \"],[8,[39,0],null,[[\"@route\"],[\"index\"]],[[\"default\"],[[[[1,\"\\n    Fractals\\n  \"]],[]]]]],[1,\"\\n\"],[13],[1,\"\\n\\n\"],[10,2],[12],[1,\"\\n  Mandelbrot\\n\"],[13],[1,\"\\n\\n\"],[10,0],[14,0,\"row\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"col-md-7\"],[12],[1,\"\\n    \"],[10,\"canvas\"],[14,1,\"mandelbrot-canvas\"],[14,\"width\",\"600\"],[14,\"height\",\"600\"],[12],[1,\"\\n      \"],[10,0],[12],[1,\"\\n        Canvas not supported or disabled\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\\n  \"],[10,0],[14,0,\"col-md-4\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,3],[14,6,\"https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js\"],[12],[1,\"\\n        Code\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,2],[12],[1,\"\\n        Parameters :\\n      \"],[13],[1,\"\\n      \"],[10,\"ul\"],[12],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          x : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"x1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"x2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          y : [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"y1\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"y2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Function : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"functionDefinition\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          C: [\"],[1,[30,0,[\"mandelbrot\",\"params\",\"a\"]]],[1,\", \"],[1,[30,0,[\"mandelbrot\",\"params\",\"b\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"maxIterations\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Ifs :\\n          \"],[10,\"ul\"],[12],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Mode : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"mode\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Iterations : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"maxIterations\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Function : \"],[1,[30,0,[\"mandelbrot\",\"params\",\"ifsParams\",\"functionDefinition\"]]],[1,\"\\n            \"],[13],[1,\"\\n          \"],[13],[1,\"\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
+    "id": "SuQA+cvE",
+    "block": "[[[10,2],[12],[1,\"\\n  \"],[8,[39,0],null,[[\"@route\"],[\"index\"]],[[\"default\"],[[[[1,\"\\n    Fractals\\n  \"]],[]]]]],[1,\"\\n\"],[13],[1,\"\\n\\n\"],[10,2],[12],[1,\"\\n  Mandelbrot\\n\"],[13],[1,\"\\n\\n\"],[10,0],[14,0,\"row\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"col-md-7\"],[12],[1,\"\\n    \"],[10,\"canvas\"],[14,1,\"component-canvas\"],[14,\"width\",\"400\"],[14,\"height\",\"400\"],[12],[1,\"\\n      \"],[10,0],[12],[1,\"\\n        Canvas not supported or disabled\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\\n  \"],[10,0],[14,0,\"col-md-4\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,3],[14,6,\"https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/mandelbrot.js\"],[12],[1,\"\\n        Code\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,2],[12],[1,\"\\n        Parameters :\\n      \"],[13],[1,\"\\n      \"],[10,\"ul\"],[12],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          x : [\"],[1,[30,0,[\"fractal\",\"params\",\"x1\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"x2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          y : [\"],[1,[30,0,[\"fractal\",\"params\",\"y1\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"y2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Function : \"],[1,[30,0,[\"fractal\",\"params\",\"functionDefinition\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          C : [\"],[1,[30,0,[\"fractal\",\"params\",\"a\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"b\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Iterations : \"],[1,[30,0,[\"fractal\",\"params\",\"iterations\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Ifs :\\n          \"],[10,\"ul\"],[12],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Mode : \"],[1,[30,0,[\"fractal\",\"params\",\"ifsParams\",\"mode\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Iterations : \"],[1,[30,0,[\"fractal\",\"params\",\"ifsParams\",\"iterations\"]]],[1,\"\\n            \"],[13],[1,\"\\n            \"],[10,\"li\"],[12],[1,\"\\n              Function : \"],[1,[30,0,[\"fractal\",\"params\",\"ifsParams\",\"functionDefinition\"]]],[1,\"\\n            \"],[13],[1,\"\\n          \"],[13],[1,\"\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
     "moduleName": "generative/templates/components/mandelbrot-component.hbs",
+    "isStrictMode": false
+  });
+  _exports.default = _default;
+});
+;define("generative/templates/components/newton-fractal-component", ["exports", "@ember/template-factory"], function (_exports, _templateFactory) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  var _default = (0, _templateFactory.createTemplateFactory)(
+  /*
+    <p>
+    <LinkTo @route='index'>
+      Fractals
+    </LinkTo>
+  </p>
+  
+  <p>
+    Newton fractal
+  </p>
+  
+  <div class='row'>
+    <div class='col-md-7'>
+      <canvas id='component-canvas' width='400' height='400'>
+        <div>
+          Canvas not supported or disabled
+        </div>
+      </canvas>
+    </div>
+  
+    <div class='col-md-4'>
+      <div class='panel'>
+        <a
+          href='https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/newton-fractal.js'
+        >
+          Code
+        </a>
+      </div>
+      <div class='panel'>
+        <p>
+          Parameters :
+        </p>
+        <ul>
+          <li>
+            x : [{{this.fractal.params.x1}}, {{this.fractal.params.x2}}]
+          </li>
+          <li>
+            y : [{{this.fractal.params.y1}}, {{this.fractal.params.y2}}]
+          </li>
+          <li>
+            Function : {{this.fractal.params.functionDefinition}}
+          </li>
+          <li>
+            C : [{{this.fractal.params.a}}, {{this.fractal.params.b}}]
+          </li>
+          <li>
+            Iterations : {{this.fractal.params.iterations}}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  */
+  {
+    "id": "1y2lViCj",
+    "block": "[[[10,2],[12],[1,\"\\n  \"],[8,[39,0],null,[[\"@route\"],[\"index\"]],[[\"default\"],[[[[1,\"\\n    Fractals\\n  \"]],[]]]]],[1,\"\\n\"],[13],[1,\"\\n\\n\"],[10,2],[12],[1,\"\\n  Newton fractal\\n\"],[13],[1,\"\\n\\n\"],[10,0],[14,0,\"row\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"col-md-7\"],[12],[1,\"\\n    \"],[10,\"canvas\"],[14,1,\"component-canvas\"],[14,\"width\",\"400\"],[14,\"height\",\"400\"],[12],[1,\"\\n      \"],[10,0],[12],[1,\"\\n        Canvas not supported or disabled\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\\n  \"],[10,0],[14,0,\"col-md-4\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,3],[14,6,\"https://github.com/agcodes/universlogique-pg/blob/master/lib/generative/addon/object/newton-fractal.js\"],[12],[1,\"\\n        Code\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n    \"],[10,0],[14,0,\"panel\"],[12],[1,\"\\n      \"],[10,2],[12],[1,\"\\n        Parameters :\\n      \"],[13],[1,\"\\n      \"],[10,\"ul\"],[12],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          x : [\"],[1,[30,0,[\"fractal\",\"params\",\"x1\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"x2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          y : [\"],[1,[30,0,[\"fractal\",\"params\",\"y1\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"y2\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Function : \"],[1,[30,0,[\"fractal\",\"params\",\"functionDefinition\"]]],[1,\"\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          C : [\"],[1,[30,0,[\"fractal\",\"params\",\"a\"]]],[1,\", \"],[1,[30,0,[\"fractal\",\"params\",\"b\"]]],[1,\"]\\n        \"],[13],[1,\"\\n        \"],[10,\"li\"],[12],[1,\"\\n          Iterations : \"],[1,[30,0,[\"fractal\",\"params\",\"iterations\"]]],[1,\"\\n        \"],[13],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
+    "moduleName": "generative/templates/components/newton-fractal-component.hbs",
     "isStrictMode": false
   });
   _exports.default = _default;
@@ -75113,13 +75762,23 @@ define("ember-resolver/features", [], function () {
             Julia set
           </LinkTo>
         </li>
+        <li>
+          <LinkTo @route='newton-fractal.page' @model='1-newton-fractal'>
+            Newton fractal
+          </LinkTo>
+        </li>
+        <li>
+          <LinkTo @route='newton-fractal.page' @model='2-newton-fractal'>
+            Newton fractal
+          </LinkTo>
+        </li>
       </ul>
     </div>
   </div>
   */
   {
-    "id": "ma/IRWgF",
-    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"1-mandelbrot\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"2-mandelbrot-ifs\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot / IFS\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"10-julia-set\"]],[[\"default\"],[[[[1,\"\\n          Julia set\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
+    "id": "08wWmJp2",
+    "block": "[[[10,0],[14,0,\"card m-4\"],[12],[1,\"\\n  \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n    \"],[10,\"ul\"],[12],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"1-mandelbrot\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"2-mandelbrot-ifs\"]],[[\"default\"],[[[[1,\"\\n          Mandelbrot / IFS\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"mandelbrot.page\",\"10-julia-set\"]],[[\"default\"],[[[[1,\"\\n          Julia set\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"newton-fractal.page\",\"1-newton-fractal\"]],[[\"default\"],[[[[1,\"\\n          Newton fractal\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n      \"],[10,\"li\"],[12],[1,\"\\n        \"],[8,[39,0],null,[[\"@route\",\"@model\"],[\"newton-fractal.page\",\"2-newton-fractal\"]],[[\"default\"],[[[[1,\"\\n          Newton fractal\\n        \"]],[]]]]],[1,\"\\n      \"],[13],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"link-to\"]]",
     "moduleName": "generative/templates/index.hbs",
     "isStrictMode": false
   });
@@ -75146,6 +75805,31 @@ define("ember-resolver/features", [], function () {
     "id": "zeqTwqoO",
     "block": "[[[10,\"main\"],[14,0,\"row m-4\"],[12],[1,\"\\n  \"],[10,\"section\"],[14,0,\"card\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n      \"],[8,[39,0],null,[[\"@inputData\"],[[30,0,[\"model\"]]]],null],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"mandelbrot-component\"]]",
     "moduleName": "generative/templates/mandelbrot/page.hbs",
+    "isStrictMode": false
+  });
+  _exports.default = _default;
+});
+;define("generative/templates/newton-fractal/page", ["exports", "@ember/template-factory"], function (_exports, _templateFactory) {
+  "use strict";
+
+  Object.defineProperty(_exports, "__esModule", {
+    value: true
+  });
+  _exports.default = void 0;
+  var _default = (0, _templateFactory.createTemplateFactory)(
+  /*
+    <main class='row m-4'>
+    <section class='card'>
+      <div class='card-body'>
+        <NewtonFractalComponent @inputData={{this.model}} />
+      </div>
+    </section>
+  </main>
+  */
+  {
+    "id": "kW/FYtCF",
+    "block": "[[[10,\"main\"],[14,0,\"row m-4\"],[12],[1,\"\\n  \"],[10,\"section\"],[14,0,\"card\"],[12],[1,\"\\n    \"],[10,0],[14,0,\"card-body\"],[12],[1,\"\\n      \"],[8,[39,0],null,[[\"@inputData\"],[[30,0,[\"model\"]]]],null],[1,\"\\n    \"],[13],[1,\"\\n  \"],[13],[1,\"\\n\"],[13]],[],false,[\"newton-fractal-component\"]]",
+    "moduleName": "generative/templates/newton-fractal/page.hbs",
     "isStrictMode": false
   });
   _exports.default = _default;

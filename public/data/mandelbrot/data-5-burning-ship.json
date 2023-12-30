@@ -5,7 +5,8 @@
 	"y1": -2,
 	"y2": 1.3,
 	"type": "f3",
-	"maxIterations": 60,
+	"base": 2,
+	"iterations": 60,
 	"method": 4,
 	"drColor": [
 		200,

@@ -4,8 +4,11 @@
 /tmp/
 ag.pub
 ag
+aggit
+aggit.pub
 /ag.pub
 /ag
+/dist/
 
 # dependencies
 /bower_components/

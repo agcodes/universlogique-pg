@@ -9,8 +9,8 @@ export default class DrawingComponent extends Component {
 	animationService = null;
 	colorsService = null;
 	fps = 50;
-	width = 600;
-	height = 600;
+	width = 400;
+	height = 400;
 	inputData=null;
 	constructor(owner, args) {
 		super(owner, args);

@@ -90,8 +90,8 @@
       _defineProperty(this, "animationService", null);
       _defineProperty(this, "colorsService", null);
       _defineProperty(this, "fps", 50);
-      _defineProperty(this, "width", 600);
-      _defineProperty(this, "height", 600);
+      _defineProperty(this, "width", 400);
+      _defineProperty(this, "height", 400);
       _defineProperty(this, "inputData", null);
       this.inputData = args.inputData;
       this.colorsService = new _colorsService.default();
@@ -247,6 +247,10 @@
     assert.expect(1);
     assert.ok(true, 'addon/components/mandelbrot-component.js should pass ESLint\n\n');
   });
+  QUnit.test('addon/components/newton-fractal-component.js', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'addon/components/newton-fractal-component.js should pass ESLint\n\n');
+  });
   QUnit.test('addon/engine.js', function (assert) {
     assert.expect(1);
     assert.ok(true, 'addon/engine.js should pass ESLint\n\n');
@@ -255,17 +259,37 @@
     assert.expect(1);
     assert.ok(true, 'addon/object/fractal-parameters.js should pass ESLint\n\n');
   });
+  QUnit.test('addon/object/fractal.js', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'addon/object/fractal.js should pass ESLint\n\n');
+  });
   QUnit.test('addon/object/mandelbrot-base.js', function (assert) {
     assert.expect(1);
     assert.ok(true, 'addon/object/mandelbrot-base.js should pass ESLint\n\n');
   });
   QUnit.test('addon/object/mandelbrot-functions.js', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'addon/object/mandelbrot-functions.js should pass ESLint\n\n61:61 - Unnecessary escape character: \\/. (no-useless-escape)');
+    assert.ok(false, 'addon/object/mandelbrot-functions.js should pass ESLint\n\n60:61 - Unnecessary escape character: \\/. (no-useless-escape)');
+  });
+  QUnit.test('addon/object/mandelbrot-parameters.js', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'addon/object/mandelbrot-parameters.js should pass ESLint\n\n');
   });
   QUnit.test('addon/object/mandelbrot.js', function (assert) {
     assert.expect(1);
     assert.ok(true, 'addon/object/mandelbrot.js should pass ESLint\n\n');
+  });
+  QUnit.test('addon/object/newton-fractal-functions.js', function (assert) {
+    assert.expect(1);
+    assert.ok(false, 'addon/object/newton-fractal-functions.js should pass ESLint\n\n210:61 - Unnecessary escape character: \\/. (no-useless-escape)');
+  });
+  QUnit.test('addon/object/newton-fractal-parameters.js', function (assert) {
+    assert.expect(1);
+    assert.ok(false, 'addon/object/newton-fractal-parameters.js should pass ESLint\n\n14:3 - Unexpected console statement. (no-console)');
+  });
+  QUnit.test('addon/object/newton-fractal.js', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'addon/object/newton-fractal.js should pass ESLint\n\n');
   });
   QUnit.test('addon/resolver.js', function (assert) {
     assert.expect(1);
@@ -278,6 +302,10 @@
   QUnit.test('addon/routes/mandelbrot/page.js', function (assert) {
     assert.expect(1);
     assert.ok(true, 'addon/routes/mandelbrot/page.js should pass ESLint\n\n');
+  });
+  QUnit.test('addon/routes/newton-fractal/page.js', function (assert) {
+    assert.expect(1);
+    assert.ok(true, 'addon/routes/newton-fractal/page.js should pass ESLint\n\n');
   });
 });
 ;define("universlogique-pg/helpers/app-version", ["exports", "@ember/component/helper", "universlogique-pg/config/environment", "ember-cli-app-version/utils/regexp"], function (_exports, _helper, _environment, _regexp) {
@@ -2166,7 +2194,7 @@ catch(err) {
 
 ;
           if (!runningTests) {
-            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+24de99b9"});
+            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+2c3f3e3f"});
           }
         
 //# sourceMappingURL=universlogique-pg.map

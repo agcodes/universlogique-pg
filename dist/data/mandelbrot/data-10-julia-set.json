@@ -7,10 +7,11 @@
 	"a": -1,
 	"b": 0,
 	"type": "f1",
-	"maxIterations": 160,
+	"base": 2,
+	"iterations": 500,
 	"method": 4,
 	"drColor": [
-		300,
+		200,
 		10,
 		-5,
 		100,
