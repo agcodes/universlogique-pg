@@ -281,7 +281,7 @@
   });
   QUnit.test('addon/object/newton-fractal-functions.js', function (assert) {
     assert.expect(1);
-    assert.ok(false, 'addon/object/newton-fractal-functions.js should pass ESLint\n\n210:61 - Unnecessary escape character: \\/. (no-useless-escape)');
+    assert.ok(false, 'addon/object/newton-fractal-functions.js should pass ESLint\n\n206:61 - Unnecessary escape character: \\/. (no-useless-escape)');
   });
   QUnit.test('addon/object/newton-fractal-parameters.js', function (assert) {
     assert.expect(1);
@@ -2194,7 +2194,7 @@ catch(err) {
 
 ;
           if (!runningTests) {
-            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+2c3f3e3f"});
+            require("universlogique-pg/app")["default"].create({"name":"universlogique-pg","version":"5.0.0+c402eac6"});
           }
         
 //# sourceMappingURL=universlogique-pg.map

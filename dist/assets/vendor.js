@@ -74568,8 +74568,6 @@ define("ember-resolver/features", [], function () {
       for (let x = 0; x <= this.width; x += this.step) {
         // convert canvas point in plan 
         const pt = this.canvasService.getPointFromPlan([x, y]);
-
-        // z not defined here
         const fractalPt = this.fractal.getPt(pt[0], pt[1], 0);
         if (fractalPt !== null) {
           // save point
@@ -75157,8 +75155,8 @@ define("ember-resolver/features", [], function () {
       };
       return functions[name];
     }
-    //return z.pow(3).add(z.pow(3)).add(c).div(z.pow(2).mulReal(3).add(c).addReal(-1));
     getFunctionDefinition(name, f, n, args, c) {
+      // TODO : complete string definitions
       const functions = {
         "f1": () => {
           return 'f(z)^n-c';
@@ -75273,10 +75271,6 @@ define("ember-resolver/features", [], function () {
           if (returnValue.substring(0, 1) == "(" && returnValue.substring(returnValue.length - 1) == ")") {
             return returnValue.substring(1).substring(0, returnValue.length - 2);
           }
-
-          //returnValue = returnValue.replace(/z\^(-?\d+)/g, "z<sup>$1</sup>");
-          //returnValue = returnValue.replace(/c\^(-?\d+)/g, "c<sup>$1</sup>");
-          //returnValue = returnValue.replace(/\(z\)\^(-?\d+)/g, "z<sup>$1</sup>");
           return returnValue + cValue;
         }
       }
